@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using PlaywrightSharp;
@@ -190,6 +189,10 @@ namespace Templates.Test
             // JS interop call to intercept navigation
             await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
             await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+
+            // Wait until SignalR sends a ping and we answer
+            await socket.WaitForEventAsync(WebSocketEvent.FrameReceived, e => e.Payload == "ApEG");
+            await socket.WaitForEventAsync(WebSocketEvent.FrameSent, e => e.Payload == "ApEG");
 
             await page.WaitForSelectorAsync("ul");
             // <title> element gets project ID injected into it during template execution
