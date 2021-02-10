@@ -137,7 +137,7 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < 10; i++)
                     {
                         var page = await browser.NewPageAsync();
                         await aspNetProcess.VisitInBrowserAsync(page);
@@ -160,12 +160,12 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < 10; i++)
                     {
                         var page = await browser.NewPageAsync();
                         await aspNetProcess.VisitInBrowserAsync(page);
                         await TestBasicNavigation(page);
-                        await page.CloseAsync(); 
+                        await page.CloseAsync();
                     }
                 }
                 else
