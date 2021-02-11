@@ -158,14 +158,36 @@ namespace Templates.Test
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
+                    EventHandler<RequestEventArgs> requestHandler = (s, e) => LogRequest(e.Request);
+                    EventHandler<ResponseEventArgs> responseHandler = (s, e) => LogResponse(e.Response);
+
+                    page.Request += requestHandler;
+                    page.Response += responseHandler;
+
                     await aspNetProcess.VisitInBrowserAsync(page);
                     await TestBasicNavigation(page);
+
+                    page.Request -= requestHandler;
+                    page.Response -= responseHandler;
+
                     await page.CloseAsync();
                 }
                 else
                 {
                     EnsureBrowserAvailable(browserKind);
                 }
+            }
+
+            void LogRequest(IRequest request)
+            {
+                Output.WriteLine($"      [Request]{(request.IsNavigationRequest ? "[Navigation]" : "")} {request.Method} {request.Url}");
+            }
+
+            void LogResponse(IResponse response)
+            {
+                var request = response.Request;
+                Output.WriteLine($"      [Response][{(int)response.Status}][{response.StatusText}]" + Environment.NewLine +
+                                 $"      For {(request.IsNavigationRequest ? "[Navigation]" : "")} {request.Method} {request.Url}");
             }
         }
 
