@@ -157,20 +157,24 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    var page = await browser.NewPageAsync();
-                    EventHandler<RequestEventArgs> requestHandler = (s, e) => LogRequest(e.Request);
-                    EventHandler<ResponseEventArgs> responseHandler = (s, e) => LogResponse(e.Response);
+                    for (int i = 0; i < 10; i++)
+                    {
+                        Output.WriteLine($"Iteration {i}.");
+                        var page = await browser.NewPageAsync();
+                        EventHandler<RequestEventArgs> requestHandler = (s, e) => LogRequest(e.Request);
+                        EventHandler<ResponseEventArgs> responseHandler = (s, e) => LogResponse(e.Response);
 
-                    page.Request += requestHandler;
-                    page.Response += responseHandler;
+                        page.Request += requestHandler;
+                        page.Response += responseHandler;
 
-                    await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                        await aspNetProcess.VisitInBrowserAsync(page);
+                        await TestBasicNavigation(page);
 
-                    page.Request -= requestHandler;
-                    page.Response -= responseHandler;
+                        page.Request -= requestHandler;
+                        page.Response -= responseHandler;
 
-                    await page.CloseAsync();
+                        await page.CloseAsync();
+                    }
                 }
                 else
                 {
