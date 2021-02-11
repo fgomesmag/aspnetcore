@@ -163,15 +163,18 @@ namespace Templates.Test
                         var page = await browser.NewPageAsync();
                         EventHandler<RequestEventArgs> requestHandler = (s, e) => LogRequest(e.Request);
                         EventHandler<ResponseEventArgs> responseHandler = (s, e) => LogResponse(e.Response);
+                        EventHandler<WebSocketEventArgs> socketTrafficInspector = (s, e) => LogSocketTraffic(e.WebSocket);
 
                         page.Request += requestHandler;
                         page.Response += responseHandler;
+                        page.WebSocket += socketTrafficInspector;
 
                         await aspNetProcess.VisitInBrowserAsync(page);
                         await TestBasicNavigation(page);
 
                         page.Request -= requestHandler;
                         page.Response -= responseHandler;
+                        page.WebSocket -= socketTrafficInspector;
 
                         await page.CloseAsync();
                     }
@@ -180,6 +183,22 @@ namespace Templates.Test
                 {
                     EnsureBrowserAvailable(browserKind);
                 }
+            }
+
+            void LogSocketTraffic(IWebSocket socket)
+            {
+                socket.FrameReceived += (s, e) => LogFrame((IWebSocket)s, sent: false, e.Payload);
+                socket.FrameSent += (s, e) => LogFrame((IWebSocket)s, sent: true, e.Payload);
+                socket.SocketError += (s, e) => LogSocketError((IWebSocket)s, e.ErrorMessage);
+                socket.Close += (s, e) => Output.WriteLine($"      [WebSocket][{((IWebSocket)s).Url}] is closed.");
+
+                void LogFrame(IWebSocket s, bool sent, string payload) =>
+                    Output.WriteLine($"      [WebSocket][{s.Url}] {(sent ? "sent" : "received")} frame with payload" +
+                    Environment.NewLine +
+                    $"      {payload}");
+
+                void LogSocketError(IWebSocket s, string message) =>
+                    Output.WriteLine($"      [WebSocket][{s.Url}] has error {message}");
             }
 
             void LogRequest(IRequest request)
